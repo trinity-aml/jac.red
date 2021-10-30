@@ -1,0 +1,67 @@
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+
+namespace JacRed.Models.tParse
+{
+    public class TorrentDetails
+    {
+        public string trackerName { get; set; }
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string[] types { get; set; }
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string url { get; set; }
+
+
+        public string title { get; set; }
+
+        public int sid { get; set; }
+
+        public int pir { get; set; }
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        public double size { get; set; }
+
+        public string sizeName { get; set; }
+
+        public DateTime createTime { get; set; } = DateTime.Now;
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        public DateTime updateTime { get; set; } = DateTime.Now;
+
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string magnet { get; set; }
+
+
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string name { get; set; }
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string originalname { get; set; }
+
+        public int relased { get; set; }
+
+
+
+        #region Быстрая сортировка
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string search_title { get; set; }
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        public int quality { get; set; }
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string videotype { get; set; }
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        public List<string> voices { get; set; } = new List<string>();
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        public List<int> seasons { get; set; } = new List<int>();
+        #endregion
+    }
+}
