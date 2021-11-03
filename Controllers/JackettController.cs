@@ -68,7 +68,7 @@ namespace JacRed.Controllers
                     #region LAMPA
                     string _n = StringConvert.SearchName(title);
                     string _o = StringConvert.SearchName(title_original);
-                    bool exactName = _n != _o && !string.IsNullOrWhiteSpace(_n) && Regex.IsMatch(_n, "[а-яА-Я]{4}") && !string.IsNullOrWhiteSpace(_o) && Regex.IsMatch(_o, "[a-zA-Z]{4}");
+                    //bool exactName = _n != _o && !string.IsNullOrWhiteSpace(_n) && Regex.IsMatch(_n, "[а-яА-Я]{4}") && !string.IsNullOrWhiteSpace(_o) && Regex.IsMatch(_o, "[a-zA-Z]{4}");
 
                     // Быстрая выборка по совпадению ключа в имени
                     foreach (var val in tParse.searchDb.Where(i => (_n != null && i.Key.Contains(_n)) || (_o != null && i.Key.Contains(_o))).Select(i => i.Value.Values))
@@ -82,11 +82,11 @@ namespace JacRed.Controllers
                             if ((_n != null && _n == name) || (_o != null && _o == originalname))
                             {
                                 #region exactName - name и originalname должны совпадать
-                                if (exactName && t.trackerName != "toloka")
-                                {
-                                    if (name != _n || originalname != _o)
-                                        continue;
-                                }
+                                //if (exactName && t.trackerName != "toloka")
+                                //{
+                                //    if (name != _n || originalname != _o)
+                                //        continue;
+                                //}
                                 #endregion
 
                                 if (is_serial == 2)
@@ -113,7 +113,7 @@ namespace JacRed.Controllers
                                     {
                                         if (year > 0)
                                         {
-                                            if (t.relased == year || /*t.relased == (year - 1) ||*/ t.relased == (year + 1))
+                                            if (t.relased == year || t.relased == (year - 1) || t.relased == (year + 1))
                                                 torrents.Add(t);
                                         }
                                         else
@@ -128,7 +128,7 @@ namespace JacRed.Controllers
                                     #region Неизвестно
                                     if (year > 0)
                                     {
-                                        if (t.relased >= year)
+                                        if (t.relased >= (year - 1))
                                             torrents.Add(t);
                                     }
                                     else
