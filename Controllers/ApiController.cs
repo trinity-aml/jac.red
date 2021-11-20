@@ -10,10 +10,92 @@ using JacRed.Engine;
 
 namespace JacRed.Controllers
 {
-    public class JackettController : BaseController
+    public class ApiController : BaseController
     {
+        #region torrents
+        [Route("api/v1.0/torrents")]
+        public ActionResult Index(string search, string type, string sort, string tracker, string voice, string videotype, long relased, long quality, long season, int page = 1, int pageSize = 500)
+        {
+            #region Выборка 
+            IEnumerable<TorrentDetails> query = null;
+            var torrents = new List<TorrentDetails>();
+
+            string _s = StringConvert.SearchName(search);
+            foreach (var val in tParse.searchDb.Where(i => i.Key.Contains(_s)).Select(i => i.Value.Values))
+            {
+                foreach (var t in val)
+                {
+                    if (string.IsNullOrWhiteSpace(type) || t.types.Contains(type))
+                        torrents.Add(t);
+                }
+            }
+
+            if (torrents.Count == 0)
+                return Json(torrents);
+
+            #region sort
+            switch (sort ?? string.Empty)
+            {
+                case "sid":
+                    query = torrents.OrderByDescending(i => i.sid);
+                    break;
+                case "pir":
+                    query = torrents.OrderByDescending(i => i.pir);
+                    break;
+                case "size":
+                    query = torrents.OrderByDescending(i => i.size);
+                    break;
+                default:
+                    query = torrents.OrderByDescending(i => i.createTime);
+                    break;
+            }
+            #endregion
+
+            if (!string.IsNullOrWhiteSpace(tracker))
+                query = query.Where(i => i.trackerName == tracker);
+
+            if (relased > 0)
+                query = query.Where(i => i.relased == relased);
+
+            if (quality > 0)
+                query = query.Where(i => i.quality == quality);
+
+            if (!string.IsNullOrWhiteSpace(videotype))
+                query = query.Where(i => i.videotype == videotype);
+
+            if (!string.IsNullOrWhiteSpace(voice))
+                query = query.Where(i => i.voices.Contains(voice));
+
+            if (season > 0)
+                query = query.Where(i => i.seasons.Contains((int)season));
+            #endregion
+
+            return Json(query.Where(i => i.sid > 0).OrderByDescending(i => i.createTime).Skip((page * pageSize) - pageSize).Take(pageSize).Select(i => new
+            {
+                tracker = i.trackerName,
+                url = i.url != null && i.url.StartsWith("http") ? i.url : null,
+                i.title,
+                size = (long)(i.size * 1048576),
+                i.sizeName,
+                i.createTime,
+                i.sid,
+                i.pir,
+                i.magnet,
+                i.name,
+                i.originalname,
+                i.relased,
+                i.videotype,
+                i.quality,
+                i.voices,
+                i.seasons,
+                i.types
+            }));
+        }
+        #endregion
+
+        #region Jackett
         [Route("api/v2.0/indexers/all/results")]
-        public ActionResult Index(string query, string title, string title_original, int year, int is_serial, int page = 1, int pageSize = 500)
+        public ActionResult Jackett(string query, string title, string title_original, int year, int is_serial, int page = 1, int pageSize = 500)
         {
             var torrents = new List<TorrentDetails>();
 
@@ -65,10 +147,8 @@ namespace JacRed.Controllers
                 }
                 else
                 {
-                    #region LAMPA
                     string _n = StringConvert.SearchName(title);
                     string _o = StringConvert.SearchName(title_original);
-                    //bool exactName = _n != _o && !string.IsNullOrWhiteSpace(_n) && Regex.IsMatch(_n, "[а-яА-Я]{4}") && !string.IsNullOrWhiteSpace(_o) && Regex.IsMatch(_o, "[a-zA-Z]{4}");
 
                     // Быстрая выборка по совпадению ключа в имени
                     foreach (var val in tParse.searchDb.Where(i => (_n != null && i.Key.Contains(_n)) || (_o != null && i.Key.Contains(_o))).Select(i => i.Value.Values))
@@ -81,14 +161,6 @@ namespace JacRed.Controllers
                             // Точная выборка по name или originalname
                             if ((_n != null && _n == name) || (_o != null && _o == originalname))
                             {
-                                #region exactName - name и originalname должны совпадать
-                                //if (exactName && t.trackerName != "toloka")
-                                //{
-                                //    if (name != _n || originalname != _o)
-                                //        continue;
-                                //}
-                                #endregion
-
                                 if (is_serial == 2)
                                 {
                                     #region Сериал
@@ -140,7 +212,6 @@ namespace JacRed.Controllers
                             }
                         }
                     }
-                    #endregion
                 }
                 #endregion
             }
@@ -159,9 +230,10 @@ namespace JacRed.Controllers
 
             return Content(JsonConvert.SerializeObject(new
             {
-                Results = torrents.Where(i => i.sid > 0).OrderByDescending(i => i.createTime).Skip((page * pageSize) - pageSize).Take(pageSize).Select(i => new 
+                Results = torrents.Where(i => i.sid > 0).OrderByDescending(i => i.createTime).Skip((page * pageSize) - pageSize).Take(pageSize).Select(i => new
                 {
                     Tracker = i.trackerName,
+                    Details = i.url != null && i.url.StartsWith("http") ? i.url : null,
                     Title = i.title,
                     Size = (long)(i.size * 1048576),
                     PublishDate = i.createTime,
@@ -176,8 +248,10 @@ namespace JacRed.Controllers
                     i.voices,
                     i.seasons,
                     i.types
-                })
+                }),
+                jacred = true
             }), contentType: "application/json; charset=utf-8");
         }
+        #endregion
     }
 }

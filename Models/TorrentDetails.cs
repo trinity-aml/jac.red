@@ -58,10 +58,10 @@ namespace JacRed.Models.tParse
         public string videotype { get; set; }
 
         [System.Text.Json.Serialization.JsonIgnore]
-        public List<string> voices { get; set; } = new List<string>();
+        public HashSet<string> voices { get; set; } = new HashSet<string>();
 
         [System.Text.Json.Serialization.JsonIgnore]
-        public List<int> seasons { get; set; } = new List<int>();
+        public HashSet<int> seasons { get; set; } = new HashSet<int>();
         #endregion
     }
 }
