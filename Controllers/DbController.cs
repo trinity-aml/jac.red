@@ -1,24 +1,17 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using JacRed.Engine.Parse;
 using JacRed.Engine;
+using JacRed.Engine.CORE;
 
 namespace JacRed.Controllers
 {
     [Route("jsondb/[action]")]
     public class DbController : BaseController
     {
-        #region Save
         static bool _saveDbWork = false;
-        static bool _disabledSaveDb = false;
 
-        public string Save(bool forced)
+        public string Save()
         {
-            if (forced)
-                _disabledSaveDb = true;
-
-            if (!forced && _disabledSaveDb)
-                return "disabled SaveDb";
-
             if (_saveDbWork)
                 return "work";
 
@@ -27,12 +20,12 @@ namespace JacRed.Controllers
             try
             {
                 tParse.SaveAndUpdateDB();
+                TorrServerAPI.SaveDB();
             }
             catch { }
 
             _saveDbWork = false;
             return "ok";
         }
-        #endregion
     }
 }

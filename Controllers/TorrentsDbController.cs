@@ -4,11 +4,15 @@ using System.Text.RegularExpressions;
 using JacRed.Engine.CORE;
 using JacRed.Engine.Parse;
 using System.Linq;
+using System.Threading.Tasks;
+using System;
+using JacRed.Engine;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace JacRed.Controllers
 {
     [Route("cron/torrents/[action]")]
-    public class TorrentsDbController : Controller
+    public class TorrentsDbController : BaseController
     {
         #region UpdateSizeInfo
         bool workUpdateSizeInfo = false;
@@ -101,7 +105,9 @@ namespace JacRed.Controllers
                     #region videotype
                     item.Value.videotype = "sdr";
                     if (Regex.IsMatch(item.Value.title.ToLower(), "(\\[| )hdr( |\\]|,|$)") || Regex.IsMatch(item.Value.title.ToLower(), "(10-bit|10 bit|10-бит|10 бит)"))
+                    {
                         item.Value.videotype = "hdr";
+                    }
                     #endregion
 
                     #region voice
@@ -121,7 +127,6 @@ namespace JacRed.Controllers
                     }
                     else
                     {
-                        // https://videocdn.tv/docs/translations
                         var allVoices = new HashSet<string>
                         {
                             "Laci", "Kerob", "LE-Production",  "Parovoz Production", "Paradox", "Omskbird", "LostFilm", "Причудики", "BaibaKo", "NewStudio", "AlexFilm", "FocusStudio", "Gears Media", "Jaskier", "ViruseProject",
@@ -313,6 +318,37 @@ namespace JacRed.Controllers
             catch { }
 
             workUpdateDetails = false;
+            return "ok";
+        }
+        #endregion
+
+        #region UpdateTorrMediaCache
+        static bool workUpdateTorrMediaCache = false;
+
+        async public Task<string> UpdateTorrMediaCache()
+        {
+            if (workUpdateTorrMediaCache)
+                return "wokr";
+
+            workUpdateTorrMediaCache = true;
+
+            DateTime stopTime = DateTime.Now.AddHours(1);
+
+            foreach (var item in tParse.db.Select(i => i.Value).OrderByDescending(i => i.createTime))
+            {
+                if (DateTime.Now > stopTime)
+                    break;
+
+                string memKey = $"TorrentsDbController:UpdateTorrMediaCache:{item.magnet}";
+                if (memoryCache.TryGetValue(memKey, out _))
+                    continue;
+
+                var medias = await TorrServerAPI.MediaFiles(memoryCache, item.magnet);
+                if (medias == null)
+                    memoryCache.Set(memKey, 0, DateTime.Now.AddDays(5));
+            }
+
+            workUpdateTorrMediaCache = false;
             return "ok";
         }
         #endregion

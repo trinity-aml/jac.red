@@ -41,10 +41,6 @@
 *    */4 *   *   *    curl -s "http://127.0.0.1:9117/cron/selezen/UpdateTasksParse"
 */5  *   *   *   *    curl -s "http://127.0.0.1:9117/cron/selezen/ParseAllTask"
 
-*/15 *   *   *   *    curl -s "http://127.0.0.1:9117/cron/ultradox/parse"
-*    */4 *   *   *    curl -s "http://127.0.0.1:9117/cron/ultradox/UpdateTasksParse"
-*/5  *   *   *   *    curl -s "http://127.0.0.1:9117/cron/ultradox/ParseAllTask"
-
 */40 *   *   *   *    curl -s "http://127.0.0.1:9117/cron/toloka/parse"
 *    */4 *   *   *    curl -s "http://127.0.0.1:9117/cron/toloka/parseMagnet"
 
