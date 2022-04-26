@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using System.Net;
@@ -10,6 +11,8 @@ namespace JacRed
     {
         public static void Main(string[] args)
         {
+            AppInit.ReadConf();
+            
             CultureInfo.CurrentCulture = new CultureInfo("ru-RU");
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
